@@ -1,0 +1,722 @@
+/* === Temel Ayarlar === */
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f2f4f8;
+  margin: 0;
+  color: #1f2937;
+}
+
+/* === Header === */
+
+/* === Header === */
+header {
+  background-color: #1E293B;
+  color: #ffffff;
+  padding: 3rem 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+.logo-container {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+.logo-img { height: 90px; }
+.logo-title {
+  font-size: 2.7rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+/* === Container ve Kartlar === */
+
+/* === Container ve Kartlar === */
+.container {
+  max-width: 1000px;
+  margin: 2rem auto;
+  padding: 0 1rem;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+.card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+  transition: transform 0.2s ease;
+}
+.card:hover { transform: translateY(-2px); }
+.card h2 { font-size: 1.2rem; color: #374151; margin-bottom: 0.5rem; }
+.card p { font-size: 2rem; font-weight: bold; color: #111827; }
+
+footer {
+  text-align: center;
+  padding: 1rem;
+  margin-top: 2rem;
+  font-size: 0.9rem;
+  color: #6b7280;
+}
+
+
+/* === Form === */
+
+/* === Form === */
+#evse-form {
+  max-width: 600px;
+  margin: 1.5rem auto;
+  padding: 1.5rem;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+#evse-form input,
+#evse-form select {
+  width: 100%;
+  padding: 0.6rem;
+  margin-bottom: 1rem;
+  border-radius: 6px;
+  border: 1px solid #d1d5db;
+  font-size: 0.95rem;
+}
+#evse-form label {
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  display: block;
+  color: #1f2937;
+}
+#evse-form button[type="submit"] {
+  margin-top: 1rem;
+  width: 100%;
+}
+
+/* === Scroll Alanı === */
+
+/* === Scroll Alanı === */
+#evse-scroll-area {
+  max-height: 285px;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+  margin-top: 0.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0,0,0,0.2) transparent;
+}
+#evse-scroll-area::-webkit-scrollbar {
+  width: 6px;
+}
+#evse-scroll-area::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+}
+#evse-scroll-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* === Butonlar === */
+
+/* === Butonlar === */
+.button-primary {
+  padding: 0.6rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+.button-primary:active {
+  transform: scale(0.98);
+}
+
+.button-evse {
+  background: linear-gradient(to right, #8b5cf6, #ec4899);
+}
+.button-evse:hover {
+  background: linear-gradient(to right, #7c3aed, #db2777);
+}
+
+.button-admin {
+  background: linear-gradient(to right, #06b6d4, #3b82f6);
+}
+.button-admin:hover {
+  background: linear-gradient(to right, #0891b2, #2563eb);
+}
+
+.button-outline {
+  background: transparent;
+  border: 2px solid #3b82f6;
+  color: #3b82f6;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 0.5rem;
+  transition: all 0.2s ease;
+}
+.button-outline:hover {
+  background: #e0f2fe;
+  border-color: #2563eb;
+  color: #2563eb;
+}
+
+/* === Status Etiketleri === */
+.evse-actions-box button {
+  width: 150px;
+  height: 32px;
+  padding: 0.4rem 1rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  border-radius: 8px;
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+
+/* Gradyen renkler */
+.evse-disconnect-btn {
+  background: linear-gradient(to right, #60a5fa, #3b82f6);
+}
+.evse-disconnect-btn:hover {
+  background: linear-gradient(to right, #3b82f6, #2563eb);
+}
+
+.evse-connect-btn {
+  background: linear-gradient(to right, #3b82f6, #2563eb);
+  color: white;
+  font-weight: 600;
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.85rem;
+  box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+}
+.evse-connect-btn:hover {
+  background: linear-gradient(to right, #2563eb, #1d4ed8);
+}
+
+.evse-delete-btn {
+  background: linear-gradient(to right, #f87171, #ef4444);
+  color: white;
+  font-weight: 600;
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+}
+.evse-delete-btn:hover {
+  background: linear-gradient(to right, #dc2626, #b91c1c);
+}
+
+.evse-start-btn {
+  background: linear-gradient(to right, #facc15, #f59e0b);
+  color: white;
+  font-weight: 600;
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(234, 179, 8, 0.3);
+}
+.evse-start-btn:hover {
+  background: linear-gradient(to right, #f59e0b, #d97706);
+}
+
+.evse-plug-btn {
+  background: linear-gradient(to right, #6ee7b7, #34d399);
+  color: white;
+  font-weight: 600;
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  border: none;
+  font-size: 0.85rem;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(52, 211, 153, 0.3);
+}
+
+.evse-plug-btn:hover {
+  background: linear-gradient(to right, #34d399, #059669);
+}
+
+
+/* === Status Etiketleri === */
+.evse-status {
+  display: inline-block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  padding: 0.35rem 0.75rem;
+  background-color: #f3f4f6;
+  color: #1f2937;
+  box-shadow: inset 0 0 0 1px #d1d5db;
+}
+
+/* Daha parlak durumlar için özel renkler */
+.status-Disconnected { background-color: #fee2e2; color: #b91c1c; }
+.status-Idle         { background-color: #fef9c3; color: #b45309; }
+.status-Reserved     { background-color: #c7d2fe; color: #4338ca; }
+.status-Charging     { background-color: #dcfce7; color: #15803d; }
+.status-Error        { background-color: #fde68a; color: #92400e; }
+.status-Maintenance  { background-color: #e0f2fe; color: #0369a1; }
+
+/* === Admin Panel === */
+.admin-panel {
+  position: fixed;
+  top: 0;
+  right: 0;
+  width: 1000px;
+  height: calc(100% - 4.5rem);
+  background: #ffffff;
+  box-shadow: -6px 0 12px rgba(0, 0, 0, 0.1);
+  padding: 2rem;
+  z-index: 1000;
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform 0.4s ease;
+}
+
+/* Admin Panel Overlay (Arka plan karartma efekti) */
+.admin-panel-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.75); /* Yarı saydam siyah renk */
+  z-index: 999; /* Admin panelinin önünde olmalı */
+  display: none; /* Başlangıçta gizli */
+}
+
+/* Admin panel açıldığında overlay'i göster */
+.admin-panel.open + .admin-panel-overlay {
+  display: block;
+}
+
+
+.admin-panel.open {
+  transform: translateX(0);
+}
+.log-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+.log-box {
+  background-color: #1e293b;
+  color: #d1d5db;
+  border-radius: 10px;
+  padding: 1rem;
+}
+.log-box h3 {
+  margin: 0 0 0.6rem;
+  color: #60a5fa;
+}
+.log-content {
+  background-color: #0f172a;
+  padding: 1rem;
+  border-radius: 6px;
+  height: 160px;
+  overflow-y: auto;
+  font-family: 'Courier New', monospace;
+  font-size: 0.85rem;
+}
+.admin-subpanel {
+  background: white;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+#close-admin-panel {
+  position: absolute;
+  top: 1.2rem;
+  right: 1.2rem;
+  background: #ef4444;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  cursor: pointer;
+  font-weight: 600;
+  transition: background 0.3s ease;
+}
+#close-admin-panel:hover {
+  background: #dc2626;
+}
+
+/* === Iconlar === */
+
+/* === Iconlar === */
+.btn-icon { height: 20px; margin-right: 0.5rem; vertical-align: middle; }
+.card-icon { height: 30px; margin-right: 0.5rem; vertical-align: middle; }
+
+.submit-btn {
+  background: linear-gradient(to right, #22c55e, #16a34a); /* yeşil */
+  box-shadow: 0 4px 8px rgba(34, 197, 94, 0.2);
+}
+
+.submit-btn:hover {
+  background: linear-gradient(to right, #16a34a, #15803d);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(34, 197, 94, 0.3);
+}
+
+/* === EVSE Action Box === */
+/* === EVSE Kartları Butonları: Sağda Dikey === */
+
+/* === EVSE Kartları (Action Box) === */
+.evse-card {
+  position: relative;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 14px;
+  padding: 1.2rem 1.5rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.evse-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+}
+
+.evse-title {
+  font-weight: 700;
+  font-size: 1.1rem;
+  color: #111827;
+  margin-bottom: 0.25rem;
+}
+
+.evse-meta {
+  font-size: 0.9rem;
+  color: #4b5563;
+  margin-bottom: 0.3rem;
+}
+
+/* Action butonları sağda dikey */
+.evse-actions-box {
+  position: absolute;
+  top: 50%;
+  right: 1.5rem;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+}
+
+
+/* Tüm butonlar için ortak stil */
+
+/* === Dropdown ve Rezervasyon === */
+.dropdown-select {
+  padding: 0.6rem;
+  font-size: 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  width: 100%;
+  background: #ffffff;
+}
+
+.reserve-btn {
+  background: linear-gradient(to right, #22c55e, #16a34a);
+  box-shadow: 0 4px 8px rgba(34, 197, 94, 0.2);
+  color: white;
+  font-weight: 600;
+  transition: all 0.2s ease;
+}
+
+.reserve-btn:hover {
+  background: linear-gradient(to right, #16a34a, #15803d);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 12px rgba(34, 197, 94, 0.3);
+}
+
+.reservation-box {
+  margin-top: 1rem;
+  padding: 1rem 1.2rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.reservation-box.success {
+  background-color: #dcfce7;
+  color: #15803d;
+}
+
+.reservation-box.error {
+  background-color: #fee2e2;
+  color: #b91c1c;
+}
+
+.reservation-box.neutral {
+  background-color: #fef9c3;
+  color: #92400e;
+}
+
+.reservation-box .emoji {
+  font-size: 1.2rem;
+}
+
+
+/* === Charging Modal === */
+.charging-modal {
+position: fixed;
+inset: 0;
+background-color: rgba(0, 0, 0, 0.75);
+display: flex;
+align-items: center;
+justify-content: center;
+z-index: 3000;
+}
+
+.charging-modal.hidden {
+display: none;
+}
+
+.charging-overlay {
+position: absolute;
+inset: 0;
+background-color: rgba(0, 0, 0, 0.75);
+z-index: 0;
+}
+
+@keyframes fadeInUp {
+from {
+  opacity: 0;
+  transform: translateY(20px);
+}
+to {
+  opacity: 1;
+  transform: translateY(0);
+}
+}
+
+.charging-meta {
+margin: 0.2rem 0;
+color: #374151;
+font-weight: 600;
+}
+
+.charging-eta-text {
+font-size: 0.95rem;
+margin-top: 0.4rem;
+color: #6b7280;
+}
+
+.charging-container {
+display: flex;
+gap: 2rem;
+align-items: center;
+justify-content: space-between;
+}
+
+.charging-info {
+flex: 1;
+text-align: left;
+}
+
+.charging-content {
+display: flex;
+gap: 2rem;
+align-items: flex-start;
+justify-content: space-between;
+}
+
+.charging-texts {
+flex: 1;
+display: flex;
+flex-direction: column;
+gap: 0.5rem;
+}
+
+.charging-battery {
+width: 100px;
+height: 200px;
+position: relative;
+display: flex;
+align-items: center;
+justify-content: center;
+}
+
+.battery-frame::after {
+content: "";
+position: absolute;
+top: -14px;
+left: 16px;
+width: 24px;
+height: 8px;
+border-radius: 4px;
+background: #333;
+}
+
+/* === Modern Battery Container === */
+
+/* === Modern Battery Container === */
+.battery-wrapper {
+display: flex;
+align-items: center;
+justify-content: space-between;
+gap: 2rem;
+}
+
+.battery-texts {
+flex: 1;
+}
+
+.battery-label {
+margin: 0.3rem 0;
+font-size: 0.95rem;
+font-weight: 500;
+color: #1f2937;
+}
+
+/* === Charging Modal Yeni Düzenleme === */
+.charging-box {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 2rem;
+  background-color: #ffffff;
+  padding: 2rem 2.5rem;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 580px;
+  position: relative;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+}
+
+.battery-visual {
+  width: 90px;
+  height: 180px;
+  border: 4px solid #333;
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  background-color: #fff;
+}
+
+.battery-cap {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 26px;
+  height: 8px;
+  background-color: #333;
+  border-radius: 4px;
+}
+
+.battery-fill {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 0%;
+  background-image: url('../public/assets/icons/wave.svg');
+  background-repeat: repeat-x;
+  background-size: 200% 100%;
+  animation: waveUp 3s linear infinite;
+  z-index: 1;
+  opacity: 0.85;
+}
+
+.charging-info-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.4rem;
+  font-size: 0.95rem;
+}
+
+.charging-info-panel h2 {
+  margin: 0 0 0.5rem;
+  font-size: 1.4rem;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.charging-info-panel p {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 500;
+  color: #374151;
+}
+
+.charging-percentage {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #16a34a;
+  margin-top: 0.3rem;
+}
+
+.charging-hide-btn {
+  margin-top: 1rem;
+  width: 100%;
+}
+
+.battery-fill.no-wave {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  height: 0%;
+  background-color: #16a34a;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  overflow: hidden;
+  transition: height 0.5s ease-in-out;
+  z-index: 1;
+}
+
+/* ✅ Işık yansıması efekti */
+.battery-highlight {
+  position: absolute;
+  bottom: -100%;
+  left: 0;
+  width: 100%;
+  height: 200%;
+  background: linear-gradient(to top, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 60%);
+  animation: highlightUp 3s ease-in-out infinite;
+  z-index: 2;
+  pointer-events: none;
+}
+
+@keyframes highlightUp {
+  0% {
+    bottom: -100%;
+  }
+  100% {
+    bottom: 100%;
+  }
+}

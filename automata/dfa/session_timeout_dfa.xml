@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<automata id="session_timeout_dfa" name="Oturum Zaman Aşımı Otomatası" type="dfa">
+    <description>
+        Kullanıcı rezerve ettiği halde zamanında gelmediyse rezervasyonun otomatik 
+        iptal edilmesini sağlayan zaman aşımı yönetim otomatası.
+    </description>
+    
+    <metadata>
+        <author>Voltrix Sistem</author>
+        <version>1.0</version>
+        <creation_date>2023-04-20</creation_date>
+    </metadata>
+    
+    <states>
+        <state id="NO_RESERVATION" name="Rezervasyon Yok" initial="true">
+            <description>Kullanıcının aktif rezervasyonu bulunmuyor</description>
+            <onEntry>resetTimeoutCounters</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#9E9E9E</color>
+                <icon>timer_off</icon>
+            </metadata>
+        </state>
+        
+        <state id="RESERVATION_ACTIVE" name="Rezervasyon Aktif">
+            <description>Rezervasyon yapılmış, kullanıcı bekleniyor</description>
+            <onEntry>startReservationTimer</onEntry>
+            <onExit>stopReservationTimer</onExit>
+            <metadata>
+                <color>#4CAF50</color>
+                <icon>access_time</icon>
+            </metadata>
+        </state>
+        
+        <state id="WARNING_SENT" name="Uyarı Gönderildi">
+            <description>Zaman aşımı yaklaşıyor, kullanıcıya uyarı gönderildi</description>
+            <onEntry>sendTimeoutWarning</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#FFC107</color>
+                <icon>warning</icon>
+            </metadata>
+        </state>
+        
+        <state id="GRACE_PERIOD" name="Ek Süre">
+            <description>Son uyarıdan sonra ek süre tanındı</description>
+            <onEntry>extendReservationTime</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#2196F3</color>
+                <icon>update</icon>
+            </metadata>
+        </state>
+        
+        <state id="TIMEOUT" name="Zaman Aşımı">
+            <description>Rezervasyon süresi doldu, zaman aşımına uğradı</description>
+            <onEntry>handleReservationTimeout</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#F44336</color>
+                <icon>timer</icon>
+            </metadata>
+        </state>
+        
+        <state id="SESSION_STARTED" name="Oturum Başladı">
+            <description>Kullanıcı zamanında geldi ve şarj oturumu başladı</description>
+            <onEntry>startChargingSession</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#4CAF50</color>
+                <icon>play_circle_filled</icon>
+            </metadata>
+        </state>
+    </states>
+    
+    <transitions>
+        <!-- Rezervasyon Yok durumundan geçişler -->
+        <transition from="NO_RESERVATION" to="RESERVATION_ACTIVE" event="CREATE_RESERVATION">
+            <action>createReservation</action>
+        </transition>
+        
+        <!-- Rezervasyon Aktif durumundan geçişler -->
+        <transition from="RESERVATION_ACTIVE" to="WARNING_SENT" event="APPROACHING_TIMEOUT">
+            <condition>isTimeoutApproaching</condition>
+            <action>prepareWarningMessage</action>
+        </transition>
+        
+        <transition from="RESERVATION_ACTIVE" to="SESSION_STARTED" event="USER_ARRIVAL">
+            <condition>isReservationValid</condition>
+            <action>validateUserArrival</action>
+        </transition>
+        
+        <transition from="RESERVATION_ACTIVE" to="NO_RESERVATION" event="CANCEL_RESERVATION">
+            <action>handleManualCancellation</action>
+        </transition>
+        
+        <!-- Uyarı Gönderildi durumundan geçişler -->
+        <transition from="WARNING_SENT" to="GRACE_PERIOD" event="EXTEND_REQUEST">
+            <condition>canExtendReservation</condition>
+            <action>processExtensionRequest</action>
+        </transition>
+        
+        <transition from="WARNING_SENT" to="TIMEOUT" event="WARNING_TIMEOUT">
+            <action>finalizeTimeout</action>
+        </transition>
+        
+        <transition from="WARNING_SENT" to="SESSION_STARTED" event="USER_ARRIVAL">
+            <condition>isReservationStillValid</condition>
+            <action>validateUserArrival</action>
+        </transition>
+        
+        <!-- Ek Süre durumundan geçişler -->
+        <transition from="GRACE_PERIOD" to="TIMEOUT" event="GRACE_PERIOD_EXPIRED">
+            <action>handleGracePeriodExpiration</action>
+        </transition>
+        
+        <transition from="GRACE_PERIOD" to="SESSION_STARTED" event="USER_ARRIVAL">
+            <condition>isReservationStillValid</condition>
+            <action>validateUserArrival</action>
+        </transition>
+        
+        <!-- Zaman Aşımı durumundan geçişler -->
+        <transition from="TIMEOUT" to="NO_RESERVATION" event="COMPLETE_CANCELLATION">
+            <action>processAutoCancellation</action>
+        </transition>
+        
+        <!-- Oturum Başladı durumundan geçişler -->
+        <transition from="SESSION_STARTED" to="NO_RESERVATION" event="SESSION_COMPLETE">
+            <action>finalizeChargingSession</action>
+        </transition>
+    </transitions>
+</automata> 

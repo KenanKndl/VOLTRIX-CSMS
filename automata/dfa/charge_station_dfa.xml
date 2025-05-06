@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<automata id="charge_station_dfa" name="Şarj İstasyonu Durum Otomatası" type="dfa">
+    <description>
+        Şarj istasyonlarının fiziksel durum değişimlerini (boş, rezerve edilmiş, dolu, arızalı, bakımda) 
+        formal bir şekilde modelleyen deterministik sonlu otomata.
+    </description>
+    
+    <metadata>
+        <author>Voltrix Sistem</author>
+        <version>1.0</version>
+        <creation_date>2023-04-20</creation_date>
+    </metadata>
+    
+    <states>
+        <state id="AVAILABLE" name="Müsait" initial="true">
+            <description>Şarj istasyonu boş ve kullanıma hazır</description>
+            <onEntry>logStateChange</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#4CAF50</color>
+                <icon>check_circle</icon>
+            </metadata>
+        </state>
+        
+        <state id="RESERVED" name="Rezerve Edilmiş">
+            <description>Şarj istasyonu rezerve edilmiş</description>
+            <onEntry>notifyStationReserved</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#FFC107</color>
+                <icon>schedule</icon>
+            </metadata>
+        </state>
+        
+        <state id="OCCUPIED" name="Dolu">
+            <description>Şarj istasyonu kullanımda</description>
+            <onEntry>updateStationStatus</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#2196F3</color>
+                <icon>battery_charging_full</icon>
+            </metadata>
+        </state>
+        
+        <state id="FAULTED" name="Arızalı">
+            <description>Şarj istasyonu arızalı durumda</description>
+            <onEntry>notifyStationFault</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#F44336</color>
+                <icon>error</icon>
+            </metadata>
+        </state>
+        
+        <state id="MAINTENANCE" name="Bakımda">
+            <description>Şarj istasyonu bakım modunda</description>
+            <onEntry>notifyMaintenance</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#9C27B0</color>
+                <icon>build</icon>
+            </metadata>
+        </state>
+    </states>
+    
+    <transitions>
+        <!-- Müsait durumundan geçişler -->
+        <transition from="AVAILABLE" to="RESERVED" event="RESERVE">
+            <condition>isStationReservable</condition>
+            <action>createReservation</action>
+        </transition>
+        
+        <transition from="AVAILABLE" to="OCCUPIED" event="PLUG_IN">
+            <condition>canPlugInWithoutReservation</condition>
+            <action>startCharging</action>
+        </transition>
+        
+        <transition from="AVAILABLE" to="FAULTED" event="FAULT_DETECTED">
+            <action>registerFault</action>
+        </transition>
+        
+        <transition from="AVAILABLE" to="MAINTENANCE" event="SCHEDULE_MAINTENANCE">
+            <action>scheduleMaintenance</action>
+        </transition>
+        
+        <!-- Rezerve edilmiş durumundan geçişler -->
+        <transition from="RESERVED" to="OCCUPIED" event="PLUG_IN">
+            <condition>isReservationValid</condition>
+            <action>startCharging</action>
+        </transition>
+        
+        <transition from="RESERVED" to="AVAILABLE" event="CANCEL_RESERVATION">
+            <action>cancelReservation</action>
+        </transition>
+        
+        <transition from="RESERVED" to="AVAILABLE" event="RESERVATION_TIMEOUT">
+            <action>expireReservation</action>
+        </transition>
+        
+        <transition from="RESERVED" to="FAULTED" event="FAULT_DETECTED">
+            <action>registerFaultAndNotifyReserver</action>
+        </transition>
+        
+        <!-- Dolu durumundan geçişler -->
+        <transition from="OCCUPIED" to="AVAILABLE" event="UNPLUG">
+            <action>finalizeCharging</action>
+        </transition>
+        
+        <transition from="OCCUPIED" to="FAULTED" event="FAULT_DETECTED">
+            <action>registerFaultAndStopCharging</action>
+        </transition>
+        
+        <!-- Arızalı durumundan geçişler -->
+        <transition from="FAULTED" to="MAINTENANCE" event="START_REPAIR">
+            <action>startRepairProcess</action>
+        </transition>
+        
+        <!-- Bakım durumundan geçişler -->
+        <transition from="MAINTENANCE" to="AVAILABLE" event="MAINTENANCE_COMPLETE">
+            <condition>isMaintenanceCompleted</condition>
+            <action>completeMaintenanceAndActivate</action>
+        </transition>
+        
+        <transition from="MAINTENANCE" to="FAULTED" event="MAINTENANCE_INCOMPLETE">
+            <action>reportMaintenanceIssue</action>
+        </transition>
+    </transitions>
+</automata> 

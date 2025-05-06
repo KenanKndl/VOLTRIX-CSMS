@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<automata id="notification_flow_dfa" name="Bildirim Akış Otomatası" type="dfa">
+    <description>
+        Sistem olaylarına (rezervasyon, iptal, şarj başlangıcı vb.) bağlı olarak
+        kullanıcıya gönderilecek bildirimlerin akışını yöneten deterministik sonlu otomata.
+    </description>
+    
+    <metadata>
+        <author>Voltrix Sistem</author>
+        <version>1.0</version>
+        <creation_date>2023-04-20</creation_date>
+    </metadata>
+    
+    <states>
+        <state id="NOTIFICATION_CREATED" name="Bildirim Oluşturuldu" initial="true">
+            <description>Bildirim oluşturuldu, gönderim için hazırlanıyor</description>
+            <onEntry>logNotificationCreation</onEntry>
+            <metadata>
+                <color>#2196F3</color>
+                <icon>create</icon>
+                <notification_type>any</notification_type>
+            </metadata>
+        </state>
+        
+        <state id="NOTIFICATION_QUEUED" name="Bildirim Kuyruğa Alındı">
+            <description>Bildirim gönderilmek üzere kuyruğa alındı</description>
+            <onEntry>addToQueue</onEntry>
+            <metadata>
+                <color>#673AB7</color>
+                <icon>queue</icon>
+            </metadata>
+        </state>
+        
+        <state id="NOTIFICATION_SENDING" name="Bildirim Gönderiliyor">
+            <description>Bildirim gönderim işlemi başlatıldı</description>
+            <onEntry>startSendingProcess</onEntry>
+            <metadata>
+                <color>#FF9800</color>
+                <icon>send</icon>
+            </metadata>
+        </state>
+        
+        <state id="NOTIFICATION_SENT" name="Bildirim Gönderildi">
+            <description>Bildirim başarıyla gönderildi</description>
+            <onEntry>logSuccessfulSending</onEntry>
+            <metadata>
+                <color>#4CAF50</color>
+                <icon>check_circle</icon>
+            </metadata>
+        </state>
+        
+        <state id="NOTIFICATION_DELIVERED" name="Bildirim Teslim Edildi">
+            <description>Bildirim kullanıcıya teslim edildi</description>
+            <onEntry>logSuccessfulDelivery</onEntry>
+            <metadata>
+                <color>#009688</color>
+                <icon>done_all</icon>
+            </metadata>
+        </state>
+        
+        <state id="NOTIFICATION_READ" name="Bildirim Okundu">
+            <description>Bildirim kullanıcı tarafından okundu</description>
+            <onEntry>updateReadStatus</onEntry>
+            <metadata>
+                <color>#4CAF50</color>
+                <icon>visibility</icon>
+            </metadata>
+        </state>
+        
+        <state id="NOTIFICATION_FAILED" name="Bildirim Başarısız">
+            <description>Bildirim gönderilemedi</description>
+            <onEntry>logFailedSending</onEntry>
+            <metadata>
+                <color>#F44336</color>
+                <icon>error</icon>
+            </metadata>
+        </state>
+        
+        <state id="NOTIFICATION_RETRY" name="Bildirim Tekrar Denenecek">
+            <description>Bildirim gönderimi tekrar denenecek</description>
+            <onEntry>scheduleRetry</onEntry>
+            <metadata>
+                <color>#FF9800</color>
+                <icon>replay</icon>
+            </metadata>
+        </state>
+        
+        <state id="NOTIFICATION_CANCELLED" name="Bildirim İptal Edildi">
+            <description>Bildirim iptal edildi</description>
+            <onEntry>logCancellation</onEntry>
+            <metadata>
+                <color>#9E9E9E</color>
+                <icon>cancel</icon>
+            </metadata>
+        </state>
+        
+        <state id="NOTIFICATION_EXPIRED" name="Bildirim Süresi Doldu">
+            <description>Bildirim süresi doldu</description>
+            <onEntry>markAsExpired</onEntry>
+            <metadata>
+                <color>#795548</color>
+                <icon>timer_off</icon>
+            </metadata>
+        </state>
+        
+        <state id="NOTIFICATION_COMPLETED" name="Bildirim Tamamlandı" final="true">
+            <description>Bildirim süreci tamamlandı</description>
+            <onEntry>finalizeNotification</onEntry>
+            <metadata>
+                <color>#4CAF50</color>
+                <icon>assignment_turned_in</icon>
+            </metadata>
+        </state>
+    </states>
+    
+    <transitions>
+        <!-- Bildirim oluşturuldu durumundan geçişler -->
+        <transition from="NOTIFICATION_CREATED" to="NOTIFICATION_QUEUED" event="QUEUE_NOTIFICATION">
+            <action>prepareForQueue</action>
+        </transition>
+        
+        <transition from="NOTIFICATION_CREATED" to="NOTIFICATION_CANCELLED" event="CANCEL_NOTIFICATION">
+            <action>cancelInitialNotification</action>
+        </transition>
+        
+        <!-- Bildirim kuyruğa alındı durumundan geçişler -->
+        <transition from="NOTIFICATION_QUEUED" to="NOTIFICATION_SENDING" event="START_SENDING">
+            <action>initiateTransmission</action>
+        </transition>
+        
+        <transition from="NOTIFICATION_QUEUED" to="NOTIFICATION_CANCELLED" event="CANCEL_NOTIFICATION">
+            <action>removeFromQueue</action>
+        </transition>
+        
+        <transition from="NOTIFICATION_QUEUED" to="NOTIFICATION_EXPIRED" event="EXPIRY_TIMEOUT">
+            <action>expireQueuedNotification</action>
+        </transition>
+        
+        <!-- Bildirim gönderiliyor durumundan geçişler -->
+        <transition from="NOTIFICATION_SENDING" to="NOTIFICATION_SENT" event="SEND_SUCCESS">
+            <action>recordSuccessfulSend</action>
+        </transition>
+        
+        <transition from="NOTIFICATION_SENDING" to="NOTIFICATION_FAILED" event="SEND_FAILURE">
+            <action>recordFailureDetails</action>
+        </transition>
+        
+        <!-- Bildirim gönderildi durumundan geçişler -->
+        <transition from="NOTIFICATION_SENT" to="NOTIFICATION_DELIVERED" event="DELIVERY_CONFIRMED">
+            <action>updateDeliveryStatus</action>
+        </transition>
+        
+        <transition from="NOTIFICATION_SENT" to="NOTIFICATION_FAILED" event="DELIVERY_FAILURE">
+            <action>recordDeliveryFailure</action>
+        </transition>
+        
+        <transition from="NOTIFICATION_SENT" to="NOTIFICATION_EXPIRED" event="DELIVERY_TIMEOUT">
+            <action>markDeliveryTimeout</action>
+        </transition>
+        
+        <!-- Bildirim teslim edildi durumundan geçişler -->
+        <transition from="NOTIFICATION_DELIVERED" to="NOTIFICATION_READ" event="USER_READ">
+            <action>recordReadTimestamp</action>
+        </transition>
+        
+        <transition from="NOTIFICATION_DELIVERED" to="NOTIFICATION_EXPIRED" event="READ_TIMEOUT">
+            <action>markReadTimeout</action>
+        </transition>
+        
+        <!-- Bildirim okundu durumundan geçişler -->
+        <transition from="NOTIFICATION_READ" to="NOTIFICATION_COMPLETED" event="COMPLETE_PROCESS">
+            <action>completeNotificationLifecycle</action>
+        </transition>
+        
+        <!-- Bildirim başarısız durumundan geçişler -->
+        <transition from="NOTIFICATION_FAILED" to="NOTIFICATION_RETRY" event="SCHEDULE_RETRY">
+            <condition>canRetry</condition>
+            <action>prepareRetryAttempt</action>
+        </transition>
+        
+        <transition from="NOTIFICATION_FAILED" to="NOTIFICATION_COMPLETED" event="MAX_RETRIES_REACHED">
+            <action>markMaxRetriesReached</action>
+        </transition>
+        
+        <!-- Bildirim tekrar denenecek durumundan geçişler -->
+        <transition from="NOTIFICATION_RETRY" to="NOTIFICATION_SENDING" event="RETRY_NOW">
+            <action>restartSendingProcess</action>
+        </transition>
+        
+        <transition from="NOTIFICATION_RETRY" to="NOTIFICATION_CANCELLED" event="CANCEL_RETRY">
+            <action>cancelPendingRetry</action>
+        </transition>
+        
+        <!-- Bildirim iptal edildi, süre doldu ve tamamlandı durumlarından geçişler -->
+        <transition from="NOTIFICATION_CANCELLED" to="NOTIFICATION_COMPLETED" event="FINALIZE">
+            <action>completeCancelledNotification</action>
+        </transition>
+        
+        <transition from="NOTIFICATION_EXPIRED" to="NOTIFICATION_COMPLETED" event="FINALIZE">
+            <action>completeExpiredNotification</action>
+        </transition>
+    </transitions>
+</automata> 

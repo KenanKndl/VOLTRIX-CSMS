@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<automata id="payment_process_dfa" name="Ödeme Süreci Otomatası" type="dfa">
+    <description>
+        Rezervasyon sonrası ödeme durumunu yöneten deterministik sonlu otomata. 
+        Ödeme başlatma, işleme, başarılı/başarısız akışlarını yönetir.
+    </description>
+    
+    <metadata>
+        <author>Voltrix Sistem</author>
+        <version>1.0</version>
+        <creation_date>2023-04-20</creation_date>
+    </metadata>
+    
+    <states>
+        <state id="PAYMENT_INITIATED" name="Ödeme Başlatıldı" initial="true">
+            <description>Ödeme işlemi başlatıldı, kullanıcı ödeme ekranında</description>
+            <onEntry>logPaymentStarted</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#FFC107</color>
+                <icon>payment</icon>
+            </metadata>
+        </state>
+        
+        <state id="PAYMENT_PROCESSING" name="İşleniyor">
+            <description>Ödeme süreci devam ediyor, ödeme sağlayıcısı işlemi işliyor</description>
+            <onEntry>updatePaymentStatus</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#2196F3</color>
+                <icon>hourglass_empty</icon>
+            </metadata>
+        </state>
+        
+        <state id="PAYMENT_SUCCESSFUL" name="Başarılı">
+            <description>Ödeme başarıyla tamamlandı</description>
+            <onEntry>completePaymentSuccess</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#4CAF50</color>
+                <icon>check_circle</icon>
+            </metadata>
+        </state>
+        
+        <state id="PAYMENT_FAILED" name="Başarısız">
+            <description>Ödeme işlemi başarısız oldu</description>
+            <onEntry>notifyPaymentFailure</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#F44336</color>
+                <icon>cancel</icon>
+            </metadata>
+        </state>
+        
+        <state id="PAYMENT_CANCELED" name="İptal Edildi">
+            <description>Kullanıcı ödeme işlemini iptal etti</description>
+            <onEntry>notifyPaymentCancellation</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#9E9E9E</color>
+                <icon>block</icon>
+            </metadata>
+        </state>
+        
+        <state id="PAYMENT_REFUNDED" name="İade Edildi">
+            <description>Ödeme tutarı iade edildi</description>
+            <onEntry>processRefund</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#9C27B0</color>
+                <icon>undo</icon>
+            </metadata>
+        </state>
+    </states>
+    
+    <transitions>
+        <!-- Ödeme Başlatıldı durumundan geçişler -->
+        <transition from="PAYMENT_INITIATED" to="PAYMENT_PROCESSING" event="SUBMIT_PAYMENT">
+            <condition>isPaymentDataValid</condition>
+            <action>processPayment</action>
+        </transition>
+        
+        <transition from="PAYMENT_INITIATED" to="PAYMENT_CANCELED" event="CANCEL_PAYMENT">
+            <action>cancelPaymentRequest</action>
+        </transition>
+        
+        <transition from="PAYMENT_INITIATED" to="PAYMENT_FAILED" event="TIMEOUT">
+            <action>handlePaymentTimeout</action>
+        </transition>
+        
+        <!-- İşleniyor durumundan geçişler -->
+        <transition from="PAYMENT_PROCESSING" to="PAYMENT_SUCCESSFUL" event="PAYMENT_APPROVED">
+            <action>completeTransaction</action>
+        </transition>
+        
+        <transition from="PAYMENT_PROCESSING" to="PAYMENT_FAILED" event="PAYMENT_DECLINED">
+            <action>recordFailureReason</action>
+        </transition>
+        
+        <transition from="PAYMENT_PROCESSING" to="PAYMENT_FAILED" event="SYSTEM_ERROR">
+            <action>logSystemError</action>
+        </transition>
+        
+        <!-- Başarısız durumundan geçişler -->
+        <transition from="PAYMENT_FAILED" to="PAYMENT_INITIATED" event="RETRY_PAYMENT">
+            <action>resetPaymentForm</action>
+        </transition>
+        
+        <!-- Başarılı durumundan geçişler -->
+        <transition from="PAYMENT_SUCCESSFUL" to="PAYMENT_REFUNDED" event="REQUEST_REFUND">
+            <condition>isRefundEligible</condition>
+            <action>initiateRefund</action>
+        </transition>
+        
+        <!-- İptal Edildi durumundan geçişler -->
+        <transition from="PAYMENT_CANCELED" to="PAYMENT_INITIATED" event="RESTART_PAYMENT">
+            <action>restartPaymentProcess</action>
+        </transition>
+    </transitions>
+</automata> 

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<automata id="station_maintenance_dfa" name="İstasyon Bakım/Arıza Yönetim Otomatası" type="dfa">
+    <description>
+        Şarj istasyonlarının bakım ve arıza durumlarına geçişlerini yöneten ve
+        operasyonel kesintileri minimuma indiren deterministik sonlu otomata.
+    </description>
+    
+    <metadata>
+        <author>Voltrix Sistem</author>
+        <version>1.0</version>
+        <creation_date>2023-04-20</creation_date>
+    </metadata>
+    
+    <states>
+        <state id="OPERATIONAL" name="Çalışır Durumda" initial="true">
+            <description>Şarj istasyonu normal şekilde çalışıyor</description>
+            <onEntry>logStationOperational</onEntry>
+            <metadata>
+                <color>#4CAF50</color>
+                <icon>check_circle</icon>
+                <priority>1</priority>
+            </metadata>
+        </state>
+        
+        <state id="FAULT_DETECTED" name="Arıza Tespit Edildi">
+            <description>Sistemde arıza tespit edildi, tanımlama aşamasında</description>
+            <onEntry>notifySystemAdmin</onEntry>
+            <metadata>
+                <color>#FF9800</color>
+                <icon>warning</icon>
+                <priority>2</priority>
+            </metadata>
+        </state>
+        
+        <state id="FAULT_DIAGNOSED" name="Arıza Tanımlandı">
+            <description>Arıza tanımlandı, çözüm planlanıyor</description>
+            <onEntry>createFaultReport</onEntry>
+            <metadata>
+                <color>#F44336</color>
+                <icon>assignment_late</icon>
+                <priority>3</priority>
+            </metadata>
+        </state>
+        
+        <state id="MAINTENANCE_SCHEDULED" name="Bakım Planlandı">
+            <description>Bakım planlandı, müdahale bekliyor</description>
+            <onEntry>scheduleMaintenance</onEntry>
+            <metadata>
+                <color>#9C27B0</color>
+                <icon>event</icon>
+                <priority>4</priority>
+            </metadata>
+        </state>
+        
+        <state id="UNDER_MAINTENANCE" name="Bakım Yapılıyor">
+            <description>Şarj istasyonuna bakım yapılıyor</description>
+            <onEntry>startMaintenanceProcess</onEntry>
+            <metadata>
+                <color>#2196F3</color>
+                <icon>build</icon>
+                <priority>5</priority>
+            </metadata>
+        </state>
+        
+        <state id="TESTING" name="Test Ediliyor">
+            <description>Bakım sonrası test aşamasında</description>
+            <onEntry>startTestingPhase</onEntry>
+            <metadata>
+                <color>#009688</color>
+                <icon>speed</icon>
+                <priority>6</priority>
+            </metadata>
+        </state>
+        
+        <state id="PERMANENT_FAILURE" name="Kalıcı Arıza" final="true">
+            <description>İstasyon kalıcı arızalı durumda ve hizmet dışı bırakıldı</description>
+            <onEntry>recordPermanentFailure</onEntry>
+            <metadata>
+                <color>#B71C1C</color>
+                <icon>power_off</icon>
+                <priority>7</priority>
+            </metadata>
+        </state>
+    </states>
+    
+    <transitions>
+        <!-- Çalışır durumdan geçişler -->
+        <transition from="OPERATIONAL" to="FAULT_DETECTED" event="DETECT_FAULT">
+            <action>initiateFaultDiagnostics</action>
+        </transition>
+        
+        <transition from="OPERATIONAL" to="MAINTENANCE_SCHEDULED" event="SCHEDULE_ROUTINE_MAINTENANCE">
+            <action>createMaintenanceTicket</action>
+        </transition>
+        
+        <!-- Arıza tespit edildi durumundan geçişler -->
+        <transition from="FAULT_DETECTED" to="FAULT_DIAGNOSED" event="COMPLETE_DIAGNOSTICS">
+            <action>finalizeDiagnosticReport</action>
+        </transition>
+        
+        <transition from="FAULT_DETECTED" to="OPERATIONAL" event="FAULT_CLEARED">
+            <condition>isAutoClearable</condition>
+            <action>resetFaultCondition</action>
+        </transition>
+        
+        <!-- Arıza tanımlandı durumundan geçişler -->
+        <transition from="FAULT_DIAGNOSED" to="MAINTENANCE_SCHEDULED" event="SCHEDULE_REPAIR">
+            <action>assignMaintenanceTeam</action>
+        </transition>
+        
+        <transition from="FAULT_DIAGNOSED" to="PERMANENT_FAILURE" event="DECLARE_UNREPAIRABLE">
+            <action>reportUnrepairableStatus</action>
+        </transition>
+        
+        <!-- Bakım planlandı durumundan geçişler -->
+        <transition from="MAINTENANCE_SCHEDULED" to="UNDER_MAINTENANCE" event="START_MAINTENANCE">
+            <action>beginMaintenanceProcess</action>
+        </transition>
+        
+        <transition from="MAINTENANCE_SCHEDULED" to="OPERATIONAL" event="CANCEL_MAINTENANCE">
+            <condition>isMaintenanceCancellable</condition>
+            <action>cancelMaintenanceTask</action>
+        </transition>
+        
+        <!-- Bakım yapılıyor durumundan geçişler -->
+        <transition from="UNDER_MAINTENANCE" to="TESTING" event="COMPLETE_MAINTENANCE">
+            <action>completeMaintenanceProcess</action>
+        </transition>
+        
+        <transition from="UNDER_MAINTENANCE" to="FAULT_DIAGNOSED" event="DISCOVER_NEW_ISSUE">
+            <action>recordAdditionalIssue</action>
+        </transition>
+        
+        <transition from="UNDER_MAINTENANCE" to="PERMANENT_FAILURE" event="DECLARE_UNREPAIRABLE">
+            <action>reportUnrepairableStatus</action>
+        </transition>
+        
+        <!-- Test ediliyor durumundan geçişler -->
+        <transition from="TESTING" to="OPERATIONAL" event="PASS_TESTS">
+            <action>certifyOperational</action>
+        </transition>
+        
+        <transition from="TESTING" to="FAULT_DIAGNOSED" event="FAIL_TESTS">
+            <action>documentTestFailure</action>
+        </transition>
+        
+        <!-- Kalıcı arıza durumundan geçiş yok, final durumdur -->
+    </transitions>
+</automata> 

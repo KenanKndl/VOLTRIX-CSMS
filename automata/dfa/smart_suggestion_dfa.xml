@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<automata id="smart_suggestion_dfa" name="Akıllı Rezervasyon Öneri Süreci Otomatası" type="dfa">
+    <description>
+        Kullanıcının şarj ihtiyacına, batarya seviyesine, mesafesine ve zamanına göre 
+        en uygun şarj istasyonlarını öneren akıllı öneri sisteminin akışını yöneten
+        deterministik sonlu otomata.
+    </description>
+    
+    <metadata>
+        <author>Voltrix Sistem</author>
+        <version>1.0</version>
+        <creation_date>2023-04-20</creation_date>
+        <priority>optional</priority>
+    </metadata>
+    
+    <states>
+        <state id="INIT" name="Başlangıç" initial="true">
+            <description>Öneri süreci başlangıç durumu</description>
+            <onEntry>initializeSuggestionProcess</onEntry>
+            <metadata>
+                <color>#2196F3</color>
+                <icon>play_arrow</icon>
+            </metadata>
+        </state>
+        
+        <state id="COLLECTING_DATA" name="Veri Toplama">
+            <description>Kullanıcı parametreleri ve sistem verileri toplanıyor</description>
+            <onEntry>startDataCollection</onEntry>
+            <metadata>
+                <color>#9C27B0</color>
+                <icon>storage</icon>
+            </metadata>
+        </state>
+        
+        <state id="ANALYZING_NEED" name="İhtiyaç Analizi">
+            <description>Kullanıcının şarj ihtiyacı ve önceliği analiz ediliyor</description>
+            <onEntry>analyzeUserNeeds</onEntry>
+            <metadata>
+                <color>#FF9800</color>
+                <icon>assessment</icon>
+            </metadata>
+        </state>
+        
+        <state id="FINDING_STATIONS" name="İstasyon Arama">
+            <description>Uygun şarj istasyonları aranıyor</description>
+            <onEntry>startStationSearch</onEntry>
+            <metadata>
+                <color>#009688</color>
+                <icon>search</icon>
+            </metadata>
+        </state>
+        
+        <state id="RANKING_SUGGESTIONS" name="Önerileri Sıralama">
+            <description>Bulunan istasyonlar kullanıcı kriterlerine göre sıralanıyor</description>
+            <onEntry>rankFoundStations</onEntry>
+            <metadata>
+                <color>#795548</color>
+                <icon>sort</icon>
+            </metadata>
+        </state>
+        
+        <state id="GENERATING_SUGGESTIONS" name="Öneri Oluşturma">
+            <description>Kullanıcıya sunulacak öneriler oluşturuluyor</description>
+            <onEntry>generateSuggestionList</onEntry>
+            <metadata>
+                <color>#4CAF50</color>
+                <icon>list</icon>
+            </metadata>
+        </state>
+        
+        <state id="PRESENTING_SUGGESTIONS" name="Önerileri Sunma">
+            <description>Öneriler kullanıcıya sunuluyor</description>
+            <onEntry>presentSuggestionsToUser</onEntry>
+            <metadata>
+                <color>#2196F3</color>
+                <icon>launch</icon>
+            </metadata>
+        </state>
+        
+        <state id="WAITING_FOR_SELECTION" name="Seçim Bekleniyor">
+            <description>Kullanıcının öneri seçmesi bekleniyor</description>
+            <metadata>
+                <color>#FFC107</color>
+                <icon>touch_app</icon>
+            </metadata>
+        </state>
+        
+        <state id="PROCESSING_SELECTION" name="Seçim İşleniyor">
+            <description>Kullanıcının seçtiği öneri işleniyor</description>
+            <onEntry>processUserSelection</onEntry>
+            <metadata>
+                <color>#4CAF50</color>
+                <icon>check_circle</icon>
+            </metadata>
+        </state>
+        
+        <state id="SUGGESTION_FAILED" name="Öneri Başarısız">
+            <description>Öneri süreci başarısız oldu</description>
+            <onEntry>logSuggestionFailure</onEntry>
+            <metadata>
+                <color>#F44336</color>
+                <icon>error</icon>
+            </metadata>
+        </state>
+        
+        <state id="SUGGESTION_COMPLETED" name="Öneri Tamamlandı" final="true">
+            <description>Öneri süreci başarıyla tamamlandı</description>
+            <onEntry>finalizeSuggestionProcess</onEntry>
+            <metadata>
+                <color>#4CAF50</color>
+                <icon>done_all</icon>
+            </metadata>
+        </state>
+    </states>
+    
+    <transitions>
+        <!-- Başlangıç durumundan geçişler -->
+        <transition from="INIT" to="COLLECTING_DATA" event="START_SUGGESTION">
+            <action>beginSuggestionWorkflow</action>
+        </transition>
+        
+        <!-- Veri toplama durumundan geçişler -->
+        <transition from="COLLECTING_DATA" to="ANALYZING_NEED" event="DATA_COLLECTED">
+            <condition>isSufficientData</condition>
+            <action>processCollectedData</action>
+        </transition>
+        
+        <transition from="COLLECTING_DATA" to="SUGGESTION_FAILED" event="INSUFFICIENT_DATA">
+            <action>reportDataInsufficiency</action>
+        </transition>
+        
+        <!-- İhtiyaç analizi durumundan geçişler -->
+        <transition from="ANALYZING_NEED" to="FINDING_STATIONS" event="NEED_ANALYZED">
+            <action>applyUserPreferences</action>
+        </transition>
+        
+        <transition from="ANALYZING_NEED" to="SUGGESTION_FAILED" event="INVALID_NEED">
+            <action>reportInvalidNeeds</action>
+        </transition>
+        
+        <!-- İstasyon arama durumundan geçişler -->
+        <transition from="FINDING_STATIONS" to="RANKING_SUGGESTIONS" event="STATIONS_FOUND">
+            <condition>hasStationResults</condition>
+            <action>processFoundStations</action>
+        </transition>
+        
+        <transition from="FINDING_STATIONS" to="SUGGESTION_FAILED" event="NO_STATIONS">
+            <action>reportNoStationsAvailable</action>
+        </transition>
+        
+        <!-- Önerileri sıralama durumundan geçişler -->
+        <transition from="RANKING_SUGGESTIONS" to="GENERATING_SUGGESTIONS" event="RANKING_COMPLETE">
+            <action>finalizeRanking</action>
+        </transition>
+        
+        <!-- Öneri oluşturma durumundan geçişler -->
+        <transition from="GENERATING_SUGGESTIONS" to="PRESENTING_SUGGESTIONS" event="SUGGESTIONS_READY">
+            <action>preparePresentation</action>
+        </transition>
+        
+        <!-- Önerileri sunma durumundan geçişler -->
+        <transition from="PRESENTING_SUGGESTIONS" to="WAITING_FOR_SELECTION" event="PRESENTED_TO_USER">
+            <action>waitForUserInteraction</action>
+        </transition>
+        
+        <!-- Seçim bekleme durumundan geçişler -->
+        <transition from="WAITING_FOR_SELECTION" to="PROCESSING_SELECTION" event="USER_SELECTED">
+            <action>handleUserSelection</action>
+        </transition>
+        
+        <transition from="WAITING_FOR_SELECTION" to="SUGGESTION_FAILED" event="USER_CANCELLED">
+            <action>handleUserCancellation</action>
+        </transition>
+        
+        <transition from="WAITING_FOR_SELECTION" to="FINDING_STATIONS" event="REFRESH_SUGGESTIONS">
+            <action>restartStationSearch</action>
+        </transition>
+        
+        <!-- Seçim işleme durumundan geçişler -->
+        <transition from="PROCESSING_SELECTION" to="SUGGESTION_COMPLETED" event="SELECTION_PROCESSED">
+            <action>completeSuggestion</action>
+        </transition>
+        
+        <transition from="PROCESSING_SELECTION" to="SUGGESTION_FAILED" event="PROCESSING_ERROR">
+            <action>reportProcessingError</action>
+        </transition>
+        
+        <!-- Öneri başarısız durumundan geçişler -->
+        <transition from="SUGGESTION_FAILED" to="INIT" event="RETRY_SUGGESTION">
+            <action>restartSuggestionProcess</action>
+        </transition>
+        
+        <transition from="SUGGESTION_FAILED" to="SUGGESTION_COMPLETED" event="ABANDON_SUGGESTION">
+            <action>cleanupFailedSuggestion</action>
+        </transition>
+    </transitions>
+</automata> 

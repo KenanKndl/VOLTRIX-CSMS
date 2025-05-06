@@ -1,0 +1,191 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<automata id="user_reservation_nfa" name="Kullanıcı Rezervasyon Süreci Otomatası" type="nfa">
+    <description>
+        Kullanıcının şarj istasyonu rezervasyon sürecindeki adımlarını ve 
+        olası sapmaları modelleyen non-deterministik sonlu otomata.
+    </description>
+    
+    <metadata>
+        <author>Voltrix Sistem</author>
+        <version>1.0</version>
+        <creation_date>2023-04-20</creation_date>
+    </metadata>
+    
+    <states>
+        <state id="NO_RESERVATION" name="Rezervasyon Yok" initial="true">
+            <description>Kullanıcının aktif bir rezervasyonu yok</description>
+            <onEntry>resetReservationStatus</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#9E9E9E</color>
+                <icon>event_busy</icon>
+            </metadata>
+        </state>
+        
+        <state id="SEARCHING" name="Arama">
+            <description>Kullanıcı şarj istasyonu arıyor</description>
+            <onEntry>startSearchProcess</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#2196F3</color>
+                <icon>search</icon>
+            </metadata>
+        </state>
+        
+        <state id="RESERVATION_PENDING" name="Onay Bekliyor">
+            <description>Rezervasyon oluşturuldu, onay bekleniyor</description>
+            <onEntry>createPendingReservation</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#FFC107</color>
+                <icon>hourglass_empty</icon>
+            </metadata>
+        </state>
+        
+        <state id="RESERVED" name="Rezerve Edildi">
+            <description>Şarj istasyonu başarıyla rezerve edildi</description>
+            <onEntry>confirmReservation</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#4CAF50</color>
+                <icon>event_available</icon>
+            </metadata>
+        </state>
+        
+        <state id="EN_ROUTE" name="Yolda">
+            <description>Kullanıcı istasyona doğru yolda</description>
+            <onEntry>startNavigationTracking</onEntry>
+            <onExit>stopNavigationTracking</onExit>
+            <metadata>
+                <color>#03A9F4</color>
+                <icon>navigation</icon>
+            </metadata>
+        </state>
+        
+        <state id="ARRIVED" name="Varış">
+            <description>Kullanıcı istasyona vardı</description>
+            <onEntry>recordArrival</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#8BC34A</color>
+                <icon>place</icon>
+            </metadata>
+        </state>
+        
+        <state id="CHARGING" name="Şarjda">
+            <description>Kullanıcı şarj işlemi başlattı</description>
+            <onEntry>startChargingSession</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#4CAF50</color>
+                <icon>battery_charging_full</icon>
+            </metadata>
+        </state>
+        
+        <state id="CANCELLED" name="İptal Edildi">
+            <description>Rezervasyon iptal edildi</description>
+            <onEntry>processReservationCancellation</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#F44336</color>
+                <icon>cancel</icon>
+            </metadata>
+        </state>
+        
+        <state id="COMPLETED" name="Tamamlandı">
+            <description>Şarj işlemi tamamlandı</description>
+            <onEntry>finalizeChargingSession</onEntry>
+            <onExit>logStateChange</onExit>
+            <metadata>
+                <color>#4CAF50</color>
+                <icon>check_circle</icon>
+            </metadata>
+        </state>
+    </states>
+    
+    <transitions>
+        <!-- Rezervasyon Yok durumundan geçişler -->
+        <transition from="NO_RESERVATION" to="SEARCHING" event="START_SEARCH">
+            <action>initializeSearch</action>
+        </transition>
+        
+        <!-- Arama durumundan geçişler -->
+        <transition from="SEARCHING" to="RESERVATION_PENDING" event="SELECT_STATION">
+            <condition>isStationAvailable</condition>
+            <action>prepareReservation</action>
+        </transition>
+        
+        <transition from="SEARCHING" to="NO_RESERVATION" event="CANCEL_SEARCH">
+            <action>terminateSearch</action>
+        </transition>
+        
+        <!-- Onay Bekliyor durumundan geçişler -->
+        <transition from="RESERVATION_PENDING" to="RESERVED" event="CONFIRM_RESERVATION">
+            <condition>isReservationValid</condition>
+            <action>processReservationConfirmation</action>
+        </transition>
+        
+        <transition from="RESERVATION_PENDING" to="NO_RESERVATION" event="CANCEL_RESERVATION">
+            <action>cancelPendingReservation</action>
+        </transition>
+        
+        <transition from="RESERVATION_PENDING" to="NO_RESERVATION" event="RESERVATION_FAILED">
+            <action>handleReservationFailure</action>
+        </transition>
+        
+        <!-- Rezerve Edildi durumundan geçişler -->
+        <transition from="RESERVED" to="EN_ROUTE" event="START_NAVIGATION">
+            <action>beginNavigation</action>
+        </transition>
+        
+        <transition from="RESERVED" to="CANCELLED" event="CANCEL_RESERVATION">
+            <action>userCancelReservation</action>
+        </transition>
+        
+        <!-- Bu bir NFA olduğu için, kullanıcının direkt olarak istasyona gitmesi durumu (non-determinism) -->
+        <transition from="RESERVED" to="ARRIVED" event="USER_DETECTED_AT_STATION">
+            <condition>isReservationActive</condition>
+            <action>handleDirectArrival</action>
+        </transition>
+        
+        <!-- Yolda durumundan geçişler -->
+        <transition from="EN_ROUTE" to="ARRIVED" event="ARRIVE_AT_STATION">
+            <condition>isLocationMatching</condition>
+            <action>validateArrival</action>
+        </transition>
+        
+        <transition from="EN_ROUTE" to="CANCELLED" event="CANCEL_TRIP">
+            <action>cancelTrip</action>
+        </transition>
+        
+        <!-- Non-deterministik durum: Kullanıcı geldi mi gelmedi mi bilinmiyor -->
+        <transition from="EN_ROUTE" to="CANCELLED" event="RESERVATION_TIMEOUT">
+            <action>expireReservation</action>
+        </transition>
+        
+        <!-- Varış durumundan geçişler -->
+        <transition from="ARRIVED" to="CHARGING" event="INITIATE_CHARGING">
+            <condition>canStartCharging</condition>
+            <action>beginChargingProcess</action>
+        </transition>
+        
+        <transition from="ARRIVED" to="CANCELLED" event="LEAVE_WITHOUT_CHARGING">
+            <action>recordNoChargeVisit</action>
+        </transition>
+        
+        <!-- Şarjda durumundan geçişler -->
+        <transition from="CHARGING" to="COMPLETED" event="COMPLETE_CHARGING">
+            <action>completeChargingSession</action>
+        </transition>
+        
+        <!-- İptal Edildi durumundan geçişler -->
+        <transition from="CANCELLED" to="NO_RESERVATION" event="ACKNOWLEDGE_CANCELLATION">
+            <action>finalizeCancellation</action>
+        </transition>
+        
+        <!-- Tamamlandı durumundan geçişler -->
+        <transition from="COMPLETED" to="NO_RESERVATION" event="FINISH_SESSION">
+            <action>closeReservationCycle</action>
+        </transition>
+    </transitions>
+</automata> 

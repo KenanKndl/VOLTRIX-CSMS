@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>VOLTRIX - Central System Dashboard</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Üst Menü (Logo ve Başlık) -->
+  <header class="header-flex">
+    <div class="logo-container">
+      <img src="../public/assets/icons/voltrix_logo.png" class="logo-img" alt="VOLTRIX Logo">
+      <span class="logo-title">VOLTRIX – Central System Dashboard</span>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Üst Buton Grubu (Add EVSE & Admin Page) -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+      <!-- Add EVSE -->
+      <button id="add-evse-btn" class="button-primary button-evse">
+        <img src="../public/assets/icons/white_plus_icon.png" alt="Plus Icon" class="btn-icon">
+        Add New EVSE
+      </button>
+
+      <!-- Admin Page -->
+      <button id="admin-page-btn" class="button-primary button-admin">
+        <img src="../public/assets/icons/terminal_icon.png" alt="Terminal Icon" class="btn-icon">
+        Admin Page
+      </button>
+    </div>
+
+    <!-- Yeni EVSE Ekleme Formu -->
+    <form id="evse-form" style="display:none;" class="card">
+      <h2>Add New EVSE</h2>
+
+      <input type="text" placeholder="EVSE Name" name="name" required />
+
+      <label>Brand</label>
+      <select name="brand" id="brand-select" required>
+        <option value="">Select Brand</option>
+        <option value="ABB">ABB</option>
+        <option value="Siemens">Siemens</option>
+        <option value="Wallbox">Wallbox</option>
+        <option value="Tesla">Tesla</option>
+      </select>
+
+      <label>Model</label>
+      <select name="model" id="model-select" required>
+        <option value="">Select Model</option>
+      </select>
+
+      <label>Vendor</label>
+      <select name="vendor" required>
+        <option value="">Select Vendor</option>
+        <option value="VOLTRIX INC.">VOLTRIX INC.</option>
+        <option value="EVconnect">EVconnect</option>
+        <option value="ChargePoint">ChargePoint</option>
+        <option value="Tesla">Tesla</option>
+      </select>
+
+      <label>Latitude</label>
+      <input type="number" name="latitude" step="0.000001" placeholder="örn: 40.7128" required />
+
+      <label>Longitude</label>
+      <input type="number" name="longitude" step="0.000001" placeholder="örn: 29.9230" required />
+
+
+      <label>Status</label>
+      <select name="status" id="status-select" required></select>
+
+      <button type="submit" class="button-primary submit-btn">Submit</button>
+      <button type="button" id="cancel-evse-btn" class="button-outline">Cancel</button>
+    </form>
+
+    <!-- Dashboard Kartları (Toplam ve Bağlı EVSE) -->
+    <div class="grid">
+      <!-- Toplam EVSE -->
+      <div class="card">
+        <h2 style="display: flex; align-items: center; gap: 0.5rem;">
+          <img src="../public/assets/icons/bolt_icon.png" class="card-icon" alt="Check Icon">
+          Total EVSEs
+        </h2>
+        <p id="total-evse">Loading...</p>
+      </div>
+
+      <!-- Bağlı EVSE -->
+      <div class="card">
+        <h2 style="display: flex; align-items: center; gap: 0.5rem;">
+          <img src="../public/assets/icons/check_icon2.png" class="card-icon" alt="Check Icon">
+          Connected EVSEs
+        </h2>
+        <p id="connected-evse">Loading...</p>
+      </div>
+    </div>
+
+    <!-- EV & EVSE Eşleştirme Paneli -->
+    <div class="card" style="margin-top: 2rem;">
+      <h2 style="display: flex; align-items: center; gap: 0.5rem;">
+        <img src="../public/assets/icons/calendar_icon.png" class="card-icon" alt="Calendar Icon">
+        EV & EVSE Reservation
+      </h2>
+
+      <!-- Dropdown + Reserve Butonu -->
+      <div style="display: grid; grid-template-columns: 1fr 1fr auto; gap: 1rem; margin-top: 1rem;">
+        <select id="ev-select" class="dropdown-select"></select>
+        <select id="idle-evse-select" class="dropdown-select"></select>
+        <button id="assign-reservation" class="button-primary reserve-btn">🗓️ Reserve</button>
+      </div>
+
+      <!-- Rezervasyon Geri Bildirim Kutusu -->
+      <div id="reservation-feedback" class="reservation-box hidden"></div>
+    </div>
+
+    <!-- EVSE Listesi -->
+    <div id="evse-list" class="card" style="margin-top: 1.5rem;">
+      <h2 style="display: flex; align-items: center; gap: 0.5rem;">
+        <img src="../public/assets/icons/list_icon.png" class="card-icon" alt="List Icon">
+        All EVSEs
+      </h2>
+
+      <div id="evse-scroll-area">
+        <div id="evse-list-content"></div>
+      </div>
+    </div>
+
+    <!-- Admin Panel Overlay (Arka planı karartmak için) -->
+    <div id="admin-panel-overlay" class="admin-panel-overlay"></div>
+
+    <!-- Admin Panel (Yan Panel) -->
+    <div id="admin-panel" class="admin-panel hidden">
+      <button id="close-admin-panel" class="admin-close-btn">✖</button>
+      <h2 style="margin-bottom: 1rem;">🔧 Admin Panel</h2>
+
+      <!-- Log Kutuları -->
+      <div class="log-container">
+        <div class="log-box">
+          <h3>Server OCPP Logs</h3>
+          <div class="log-content" id="server-ocpp-log">[waiting for logs...]</div>
+        </div>
+        <div class="log-box">
+          <h3>Client OCPP Logs</h3>
+          <div class="log-content" id="client-ocpp-log">[waiting for logs...]</div>
+        </div>
+      </div>
+
+      <!-- Gelecek Araçlar -->
+      <div class="admin-subpanel">
+        <h3>Placeholder for extra admin tools</h3>
+        <p>This area will later be used for admin-level operations and settings.</p>
+      </div>
+    </div>
+
+
+    <!-- Şarj Modalı -->
+    <div id="charging-modal" class="charging-modal hidden">
+      <div class="charging-overlay"></div>
+      <div class="charging-box">
+
+        <!-- 🔋 Batarya Görseli -->
+        <div class="battery-visual">
+          <div class="battery-cap"></div>
+          <div id="battery-fill" class="battery-fill no-wave">
+            <div class="battery-highlight"></div>
+          </div>
+        </div>
+
+        <!-- ℹ️ Bilgi Paneli -->
+        <div class="charging-info-panel">
+          <h2>🔋 Charging</h2>
+          <p><span>EV:</span> <span id="charging-ev-name">-</span></p>
+          <p><span>EVSE:</span> <span id="charging-evse-name">-</span></p>
+          <p><span>Estimated Time:</span> <span id="charging-remaining-time">-- sec</span></p>
+          <p class="charging-percentage" id="charging-percentage">0%</p>
+          <p><span>Energy Delivered:</span> <span id="charging-energy-info">-- kWh</span></p>
+          <p><span>Time Left:</span> <span id="charging-eta">-- sec</span></p>
+          <button onclick="hideChargingModal()" class="button-outline charging-hide-btn">Hide</button>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Alt Bilgi -->
+  <footer>
+    <p>© 2025 VOLTRIX Inc. All rights reserved.</p>
+  </footer>
+
+  <!-- Brand - Model Dinamik Eşleştirme -->
+  <script>
+    const brandModelMap = {
+      "ABB": [
+        { value: "ABB Terra AC", label: "Terra AC" },
+        { value: "ABB Terra DC Wallbox", label: "Terra DC Wallbox" },
+        { value: "ABB Terra 54", label: "Terra 54" }
+      ],
+      "Siemens": [
+        { value: "Siemens VersiCharge", label: "VersiCharge" },
+        { value: "Siemens Sicharge D", label: "Sicharge D" }
+      ],
+      "Wallbox": [
+        { value: "Wallbox Pulsar Plus", label: "Pulsar Plus" },
+        { value: "Wallbox Copper SB", label: "Copper SB" }
+      ],
+      "Tesla": [
+        { value: "Tesla Supercharger V2", label: "Supercharger V2" },
+        { value: "Tesla Supercharger V3", label: "Supercharger V3" }
+      ],
+      "Delta": [
+        { value: "Delta DC Wallbox", label: "DC Wallbox" },
+        { value: "Delta AC Mini Plus", label: "AC Mini Plus" }
+      ],
+      "Schneider Electric": [
+        { value: "Schneider EVlink Wallbox", label: "EVlink Wallbox" },
+        { value: "Schneider EVlink Parking", label: "EVlink Parking" }
+      ],
+      "Efacec": [
+        { value: "Efacec QC45", label: "QC45" },
+        { value: "Efacec HV350", label: "HV350" }
+      ],
+      "Keba": [
+        { value: "Keba KeContact P30", label: "KeContact P30" }
+      ],
+      "EVBox": [
+        { value: "EVBox Elvi", label: "Elvi" },
+        { value: "EVBox Troniq Modular", label: "Troniq Modular" }
+      ]
+    };
+    
+    
+    const modelPowerMap = {
+      "ABB Terra AC": 22.0,
+      "ABB Terra DC Wallbox": 24.0,
+      "ABB Terra 54": 50.0,
+      "Siemens VersiCharge": 11.0,
+      "Siemens Sicharge D": 300.0,
+      "EVBox Elvi": 22.0,
+      "EVBox Troniq Modular": 175.0,
+      "Wallbox Pulsar Plus": 7.4,
+      "Wallbox Copper SB": 22.0,
+      "Delta DC Wallbox": 25.0,
+      "Delta AC Mini Plus": 22.0,
+      "Tesla Supercharger V2": 150.0,
+      "Tesla Supercharger V3": 250.0,
+      "Schneider EVlink Wallbox": 22.0,
+      "Schneider EVlink Parking": 22.0,
+      "Efacec QC45": 50.0,
+      "Efacec HV350": 350.0,
+      "Keba KeContact P30": 22.0
+    };
+    
+  
+    const brandSelect = document.getElementById("brand-select");
+    const modelSelect = document.getElementById("model-select");
+    
+  
+    brandSelect.addEventListener("change", () => {
+      const selectedBrand = brandSelect.value;
+      modelSelect.innerHTML = "<option value=''>Select Model</option>";
+    
+      if (brandModelMap[selectedBrand]) {
+        brandModelMap[selectedBrand].forEach(({ value, label }) => {
+          const option = document.createElement("option");
+          option.value = value;
+          option.textContent = label;
+          modelSelect.appendChild(option);
+        });
+      }
+    });
+    
+    
+  
+    // ✅ OCPP 2.0.1 ConnectorStatusEnumType uyumlu status dropdown
+    const ocppStatusMap = {
+      "Available": "🟢 Available",
+      "Occupied": "🔵 Occupied",
+      "Reserved": "🟡 Reserved",
+      "Unavailable": "🛠️ Unavailable",
+      "Faulted": "❌ Faulted"
+    };
+  
+    async function loadStatuses() {
+      const select = document.getElementById("status-select");
+      select.innerHTML = "<option value=''>Select Status</option>";
+      for (const [value, label] of Object.entries(ocppStatusMap)) {
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = label;
+        select.appendChild(option);
+      }
+    }
+  
+    loadStatuses(); // sayfa yüklenince hemen dropdown'ı doldur
+  
+  </script>
+  
+  <!-- Uygulama Scripti -->
+  <script src="app.js"></script>
+
+</body>
+</html>
